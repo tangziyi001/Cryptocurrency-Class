@@ -1,23 +1,22 @@
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.lang.Math;
 
 /* CompliantNode refers to a node that follows the rules (not malicious)*/
 public class CompliantNode implements Node {
-    Set<Transaction> allTx;
-    int numParents;
-    double p_malicious;
+    HashSet<Transaction> allTx;
+    boolean[] followees;
     public CompliantNode(double p_graph, double p_malicious, double p_txDistribution, int numRounds) {
         // IMPLEMENT THIS
         allTx = new HashSet<Transaction>();
-        this.p_malicious = p_malicious;
     }
 
     public void setFollowees(boolean[] followees) {
         // IMPLEMENT THIS
-        this.numParents = followees.length;
+        this.followees = Arrays.copyOf(followees, followees.length);
     }
 
     public void setPendingTransaction(Set<Transaction> pendingTransactions) {
@@ -33,9 +32,18 @@ public class CompliantNode implements Node {
     }
 
     public void receiveFromFollowees(Set<Candidate> candidates) {
-        // IMPLEMENT THIS
+        HashSet<Integer> activeSenders = new HashSet<Integer>();
         for (Candidate c : candidates) {
-            allTx.add(new Transaction(c.tx.id));
+            activeSenders.add(c.sender);
+        }
+        for (int i = 0; i < followees.length; i++) {
+            if (!activeSenders.contains(i)) {
+                this.followees[i] = false;
+            }
+        }
+        for (Candidate c : candidates) {
+            if (followees[c.sender])
+                allTx.add(new Transaction(c.tx.id));
         }
     }
 }
